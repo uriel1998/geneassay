@@ -2,6 +2,10 @@
 /1_reference/
 /config/*.json
 !/config/config.json.example
+/config/commands/*.json
+/config/commands/*.pid
+/config/commands/*.log
+!/config/commands/.gitkeep
 /bin/
 /include/
 /lib/

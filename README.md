@@ -57,6 +57,39 @@ python3 geneassay/geneassay.py
 
 Geneassay reads saved configurations from `<project root>/config` and saves new configuration JSON files there.
 
+## Run Geneassay as a daemon
+
+The daemon entrypoint is:
+
+```bash
+python3 geneassay/geneassay-daemon.py
+```
+
+It watches `<project root>/config/commands/current.json`, applies that config when it changes, and exits if that control file is deleted.
+
+The included helper script lets you choose a saved config with `fzf`, stage it into the control path, and start the daemon if it is not already running:
+
+```bash
+./run-geneassay-daemon.sh
+```
+
+The helper script:
+
+1. Lets you pick one of the `config/config_*.json` files with `fzf`, or choose `exit`.
+2. Copies the selected config into `config/commands/current.json`.
+3. Starts `geneassay-daemon.py` only if it is not already running.
+4. Leaves an already-running daemon alone, so it can notice the updated control file on its own.
+
+Choosing `exit` deletes `config/commands/current.json`, which makes the daemon stop itself.
+
+Daemon runtime artifacts live under `config/commands/`:
+
+- `current.json`: active watched control file
+- `geneassay-daemon.pid`: daemon PID file
+- `geneassay-daemon.log`: daemon stdout/stderr log
+
+Delete `config/commands/current.json` to make the daemon exit.
+
 ## Command line arguments
 
 Geneassay currently does not define or parse any application-specific command line arguments or flags.
