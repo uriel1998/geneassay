@@ -8,6 +8,7 @@ control_file="${commands_dir}/current.json"
 pid_file="${commands_dir}/geneassay-daemon.pid"
 log_file="${commands_dir}/geneassay-daemon.log"
 daemon_script="${project_root}/geneassay/geneassay-daemon.py"
+startup_timeout_seconds=30
 
 if ! command -v fzf >/dev/null 2>&1; then
     printf 'fzf is required but was not found in PATH.\n' >&2
@@ -49,7 +50,23 @@ if [[ -f "${pid_file}" ]]; then
 fi
 
 nohup "${daemon_script}" >"${log_file}" 2>&1 &
-sleep 1
+launcher_pid="$!"
+
+for (( elapsed = 0; elapsed < startup_timeout_seconds; elapsed++ )); do
+    if [[ -f "${pid_file}" ]]; then
+        daemon_pid="$(<"${pid_file}")"
+        if [[ -n "${daemon_pid}" ]] && kill -0 "${daemon_pid}" 2>/dev/null; then
+            printf 'Started Geneassay daemon with PID %s.\n' "${daemon_pid}"
+            exit 0
+        fi
+    fi
+
+    if ! kill -0 "${launcher_pid}" 2>/dev/null; then
+        break
+    fi
+
+    sleep 1
+done
 
 if [[ -f "${pid_file}" ]]; then
     daemon_pid="$(<"${pid_file}")"
