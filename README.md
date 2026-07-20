@@ -10,8 +10,7 @@ Also has a daemon mode that allows for dynamic and scripted updating.
 
 This project is a fork of [dinogomez/genzai](https://github.com/dinogomez/genzai).
 
-<p align="left">
-<img src="https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png">
+<p align="left"><img src="https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png"></p>
 
  
 # Run Geneassay from source
@@ -19,7 +18,7 @@ This project is a fork of [dinogomez/genzai](https://github.com/dinogomez/genzai
 Clone the repository and cd into it.
 
 ```bash
-$ git clone git@github.com:dinogomez/geneassay.git
+$ git clone git@github.com:uriel1998/geneassay.git
 $ cd geneassay
 ```
 
