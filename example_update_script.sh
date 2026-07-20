@@ -6,6 +6,14 @@ set -euo pipefail
 # prepends an icon, and then updates the second line ONLY of 
 # your current rich presence (if RPC is being handled by geneassay)
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+project_root="$(cd "${script_dir}" && pwd)"
+
+if [ ! -f "${project_root}/config/commands/geneassay-daemon.pid" ];then
+	printf 'This requires the daemon to be running first, sorry.' >&2
+	exit 1
+fi
+
 
 PressureScore=$(head -n 1 /home/steven/.cache/tanuki_weather/weather_cache/Phonepressure_pressure_score.txt)
 PressureLevel=$(awk -v score="$PressureScore" 'BEGIN {

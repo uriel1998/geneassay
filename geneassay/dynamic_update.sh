@@ -8,6 +8,12 @@ control_file="${project_root}/config/commands/current.json"
 line1=""
 line2=""
 
+if [ ! -f "${project_root}/config/commands/geneassay-daemon.pid" ];then
+	printf 'This requires the daemon to be running first, sorry.' >&2
+	exit 1
+fi
+
+
 for arg in "$@"; do
     case "${arg}" in
         --line1=*)
