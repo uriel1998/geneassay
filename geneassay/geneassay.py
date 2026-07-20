@@ -56,6 +56,7 @@ import customtkinter as ctk
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CONFIG_DIR = PROJECT_ROOT / "config"
+PANIC_IMAGE_URL = "https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png"
 
 # Dont really understand why, but it increases the render speed.
 # Caught ibus to be getting most of the cpu% so quick read
@@ -385,6 +386,8 @@ class App(ctk.CTk):
 
         # Vars
         self.isConnected = False
+        self.isConnecting = False
+        self.isSavingConfig = False
         self.isUpdatingPresence = False
         self.config_init()
 
@@ -439,13 +442,33 @@ class App(ctk.CTk):
             self.combobox_config.configure(values=self.config_list)
 
     def save_config(self):
-        if not self.discord_rpc.test_connection(self.entry_app_id.get()):
+        app_id = self.entry_app_id.get()
+        if not app_id:
             self.set_app_label("A valid application id is required.", "red")
+            return
+
+        if self.isSavingConfig:
+            self.set_app_label("Config save already in progress.")
+            return
+
+        self.isSavingConfig = True
+        self.button_config.configure(
+            state="disabled", fg_color=STYLE["DISABLED"])
+        threading.Thread(
+            target=self._save_config_async,
+            args=(app_id,),
+            daemon=True,
+        ).start()
+
+    def _save_config_async(self, app_id):
+        success, error = self.discord_rpc.test_connection(app_id)
+        if not success:
+            self.after(0, self._finish_save_config, False, error, None)
             return
 
         print("Saving config...")
         config_data = {
-            "app_id": self.entry_app_id.get(),
+            "app_id": app_id,
             "details": self.entry_details.get(),
             "party_state": self.entry_party_state.get(),
             "party_min": self.entry_party_min.get(),
@@ -468,6 +491,18 @@ class App(ctk.CTk):
         file_path = CONFIG_DIR / file_name
         with file_path.open('w') as f:
             json.dump(config_data, f, indent=4)
+
+        self.after(0, self._finish_save_config, True, None, file_name)
+
+    def _finish_save_config(self, success, error, file_name):
+        self.isSavingConfig = False
+        self.button_config.configure(
+            state="normal", fg_color=STYLE["NORMAL"])
+
+        if not success:
+            self.set_app_label(
+                f"Config save failed. {self.format_error(error)}")
+            return
 
         if file_name not in self.config_list:
             self.config_list.append(file_name)
@@ -603,9 +638,22 @@ class App(ctk.CTk):
 
     def _update_presence_async(self, update_kwargs):
         success, error = self.discord_rpc.update_presence(**update_kwargs)
-        self.after(0, self._finish_presence_update, success, error)
+        used_fallback_images = False
 
-    def _finish_presence_update(self, success, error):
+        if not success and self._has_presence_images(update_kwargs):
+            fallback_kwargs = self._with_fallback_images(update_kwargs)
+            success, error = self.discord_rpc.update_presence(**fallback_kwargs)
+            used_fallback_images = success
+
+        self.after(
+            0,
+            self._finish_presence_update,
+            success,
+            error,
+            used_fallback_images,
+        )
+
+    def _finish_presence_update(self, success, error, used_fallback_images):
         self.isUpdatingPresence = False
 
         if self.isConnected:
@@ -614,11 +662,30 @@ class App(ctk.CTk):
 
         if success:
             self.update_timestamp = datetime.now().timestamp()
-            self.set_app_label("Presence Updated", "white")
+            if used_fallback_images:
+                self.set_app_label(
+                    "Presence updated using fallback image.", "white")
+            else:
+                self.set_app_label("Presence Updated", "white")
             return
 
         self.set_app_label(
             f"Presence update failed. {self.format_error(error)}")
+
+    def _has_presence_images(self, update_kwargs):
+        return bool(
+            update_kwargs.get("large_image") or update_kwargs.get("small_image")
+        )
+
+    def _with_fallback_images(self, update_kwargs):
+        fallback_kwargs = dict(update_kwargs)
+
+        if fallback_kwargs.get("large_image"):
+            fallback_kwargs["large_image"] = PANIC_IMAGE_URL
+        if fallback_kwargs.get("small_image"):
+            fallback_kwargs["small_image"] = PANIC_IMAGE_URL
+
+        return fallback_kwargs
 
     def format_error(self, error):
         if error is None:
@@ -638,8 +705,26 @@ class App(ctk.CTk):
         if self.validate_and_set_app_label(not self.app_id, "Application ID is required."):
             return
 
-        # Attempt to connect to the Discord RPC with the provided Application ID
-        success, res = self.discord_rpc.connect(self.app_id)
+        if self.isConnecting:
+            self.set_app_label("Connection already in progress.")
+            return
+
+        self.isConnecting = True
+        self.button_connect.configure(
+            state="disabled", fg_color=STYLE["DISABLED"])
+        self.set_app_label("Connecting...", "white")
+        threading.Thread(
+            target=self._connect_async,
+            args=(self.app_id,),
+            daemon=True,
+        ).start()
+
+    def _connect_async(self, app_id):
+        success, result = self.discord_rpc.connect(app_id)
+        self.after(0, self._finish_connect, success, result)
+
+    def _finish_connect(self, success, result):
+        self.isConnecting = False
 
         if success:
             # If connection is successful, update the connection state
@@ -654,10 +739,11 @@ class App(ctk.CTk):
             # Clear any previous error messages
             self.set_app_label("")
             return True
-        else:
-            # If connection fails, display the error message
-            self.set_app_label(
-                f"Connection Failed. {self.format_error(res)}")
+
+        self.button_connect.configure(
+            state="normal", fg_color=STYLE["NORMAL"])
+        self.set_app_label(
+            f"Connection Failed. {self.format_error(result)}")
 
     def disconnect(self):
         # Check if already disconnected
