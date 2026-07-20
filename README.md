@@ -6,6 +6,8 @@ Also has a daemon mode that allows for dynamic and scripted updating.
 
 This project is a fork of the original upstream repository at [github.com/dinogomez/genzai](https://github.com/dinogomez/genzai).  Because it's so different, and because I kept misreading the original name, I renamed it.
 
+Because you create a Discord app, this *will* work with Flatpak installations of Discord (or alternates). 
+
 Geneassay can load and save settings in the `config/` directory at the project root.
 
 ## Table Of Contents
