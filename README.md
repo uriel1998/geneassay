@@ -1,5 +1,5 @@
 
-# <img src=https://github.com/uriel1998/geneassay/assets/41871666/0536940c-fa2d-4fda-9744-25edbc5ead14 style="height:1em;"/> Geneassay : Discord Rich Presence
+# <img src=https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png style="height:1em;"/> Geneassay : Discord Rich Presence
 
 ---
 
@@ -7,6 +7,8 @@
 
 A lightweight Discord custom Rich Presence manager that runs on Linux.  Has both a GUI built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) and [pypresence](https://github.com/qwertyquerty/pypresence), heavily inspired by [maximax42](https://github.com/maximmax42)'s amazing [Discord-CustomRP](https://github.com/maximmax42/Discord-CustomRP).
 Also has a daemon mode that allows for dynamic and scripted updating.
+
+This project is a fork of [dinogomez/genzai](https://github.com/dinogomez/genzai).
 
 <p align="left">
 <img src="https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png">
