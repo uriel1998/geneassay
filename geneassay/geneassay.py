@@ -5,7 +5,6 @@
 
 import os
 import json
-import glob
 import subprocess
 import sys
 import time
@@ -52,6 +51,10 @@ _ensure_runtime_environment()
 from pypresence import Presence
 from PIL import ImageTk
 import customtkinter as ctk
+
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+CONFIG_DIR = PROJECT_ROOT / "config"
 
 # Dont really understand why, but it increases the render speed.
 # Caught ibus to be getting most of the cpu% so quick read
@@ -379,14 +382,14 @@ class App(ctk.CTk):
     def combobox_config_callback(self, choice):
         print("combobox dropdown clicked:", choice)
 
-        file_path = os.path.join(os.getcwd(), choice)
+        file_path = CONFIG_DIR / choice
 
-        if not os.path.exists(file_path):
+        if not file_path.exists():
             self.set_app_label(f"Config file {choice} not found.", "red")
             return
 
         try:
-            with open(file_path, 'r') as f:
+            with file_path.open('r') as f:
                 config_data = json.load(f)
         except (json.JSONDecodeError, IOError) as e:
             self.set_app_label("Error reading config file.", "red")
@@ -416,15 +419,13 @@ class App(ctk.CTk):
         self.set_app_label(f"Loaded configuration {choice}.", "green")
 
     def config_init(self):
-        current_directory = os.getcwd()
-        pattern = os.path.join(current_directory, 'config_*.json')
-        file_paths = glob.glob(pattern)
+        CONFIG_DIR.mkdir(exist_ok=True)
+        file_paths = sorted(CONFIG_DIR.glob("config_*.json"))
 
         if not file_paths:
             self.validate_and_set_app_label(True, "No config file loaded.")
         else:
-            self.config_list.extend(os.path.basename(file_path)
-                                    for file_path in file_paths)
+            self.config_list.extend(file_path.name for file_path in file_paths)
             self.set_app_label(f"Loaded {len(file_paths)} configs.", "white")
             self.combobox_config.configure(values=self.config_list)
 
@@ -454,10 +455,13 @@ class App(ctk.CTk):
         config_data = {k: v for k, v in config_data.items() if v}
 
         file_name = f"config_{config_data['app_id']}.json"
-        with open(file_name, 'w') as f:
+        CONFIG_DIR.mkdir(exist_ok=True)
+        file_path = CONFIG_DIR / file_name
+        with file_path.open('w') as f:
             json.dump(config_data, f, indent=4)
 
-        self.config_list.append(file_name)
+        if file_name not in self.config_list:
+            self.config_list.append(file_name)
         self.combobox_config.configure(values=self.config_list)
         self.set_app_label("Configuration saved successfully.", "green")
 

@@ -8,7 +8,7 @@
 
 ---
 
-### ⭐ [NEW] Added option to load and save your settings to a config file.
+### ⭐ [NEW] Added option to load and save your settings to the `config/` directory at the project root.
 
 A lightweight Discord custom Rich Presence manager that runs on Linux and Windows, with macOS support coming soon. Built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) and [pypresence](https://github.com/qwertyquerty/pypresence), heavily inspired by [maximax42](https://github.com/maximmax42)'s amazing [Discord-CustomRP](https://github.com/maximmax42/Discord-CustomRP).
 
@@ -36,8 +36,9 @@ The latest official release of Geneassay is available for both Linux and Windows
 6. Copy the `Application ID` and paste it in the `App ID` field in Geneassay.
 7. Click `Connect`
 8. Fill out the fields you want.
-9. Click `Update`
-10. Enjoy your new Discord Rich Presence!
+9. Click `Save Config` if you want to persist the current settings to the `config/` directory in the project root.
+10. Click `Update`
+11. Enjoy your new Discord Rich Presence!
 
 ## Run Geneassay from source
 
@@ -53,6 +54,8 @@ Run the app directly with Python.
 ```bash
 python3 geneassay/geneassay.py
 ```
+
+Geneassay reads saved configurations from `<project root>/config` and saves new configuration JSON files there.
 
 ## Command line arguments
 

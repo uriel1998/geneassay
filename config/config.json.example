@@ -1,0 +1,12 @@
+{
+    "app_id": "1528519249881071616",
+    "details": "having a moment",
+    "large_image_url": "https://example.com/images/moment.png",
+    "large_image_text": "wheeeeeee",
+    "small_image_url": "https://example.com/images/logo.png",
+    "small_image_text": "tanuki",
+    "button_one_url": "https://github.com/uriel1998",
+    "button_one_text": "GitHub",
+    "button_two_url": "https://git.faithcollapsing.com/",
+    "button_two_text": "Gitea"    
+}
