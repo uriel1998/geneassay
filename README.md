@@ -4,7 +4,7 @@
 A lightweight Discord custom Rich Presence manager that runs on Linux.  Has both a GUI built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) and [pypresence](https://github.com/qwertyquerty/pypresence), heavily inspired by [maximax42](https://github.com/maximmax42)'s amazing [Discord-CustomRP](https://github.com/maximmax42/Discord-CustomRP).
 Also has a daemon mode that allows for dynamic and scripted updating.
 
-This project is a fork of the original upstream repository at [github.com/dinogomez/genzai](https://github.com/dinogomez/genzai).
+This project is a fork of the original upstream repository at [github.com/dinogomez/genzai](https://github.com/dinogomez/genzai).  Because it's so different, and because I kept misreading the original name, I renamed it.
 
 Geneassay can load and save settings in the `config/` directory at the project root.
 
@@ -13,7 +13,6 @@ Geneassay can load and save settings in the `config/` directory at the project r
 - [Run Geneassay From Source As A GUI](#run-geneassay-from-source-as-a-gui)
 - [Config File Reference](#config-file-reference)
 - [Run Geneassay As A Daemon](#run-geneassay-as-a-daemon)
-- [GUI Command Line Arguments](#gui-command-line-arguments)
 - [License](#license)
 
 <p align="left"><img src="https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png"></p>
@@ -150,24 +149,7 @@ Daemon runtime artifacts live under `config/commands/`:
 - `geneassay-daemon.log`: daemon stdout/stderr log
 
 Delete `config/commands/current.json` to make the daemon exit.
-
-## GUI Command Line Arguments
-
-`geneassay.py` currently does not define or parse any application-specific command line arguments or flags.
-
-You can run it as:
-
-```bash
-python3 geneassay/geneassay.py
-```
-
-
-5. Continue running with any command line arguments you originally passed in.
-
-At the moment, this argument preservation only means the bootstrap step will not discard extra arguments. The application itself does not currently consume them.
-
-Your system Python needs the standard `venv` module available for this to work.
-  
+ 
 
 ## License
 
