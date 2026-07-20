@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added `geneassay/geneassay-daemon.py`, a watched-control-file daemon that applies presence updates from `config/commands/current.json`.
+- Added `geneassay/geneassay-daemon.py`, a watched-control-file daemon that applies presence updates from `config/commands/current.json` and exits when that control file is deleted.
 - Added `run-geneassay-daemon.sh`, an `fzf`-driven helper that selects a saved config, stages it into the daemon control path, and can request daemon exit by deleting the control file.
 - Added `geneassay/dynamic_update.sh`, a `jq`-based helper that updates the active daemon control file from `--line1`, `--line2`, or a `yad` prompt.
 

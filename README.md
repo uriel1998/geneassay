@@ -38,7 +38,7 @@ The daemon entrypoint is:
 python3 geneassay/geneassay-daemon.py
 ```
 
-It watches `<project root>/config/commands/current.json`, applies that config when it changes, and exits if that control file is deleted.
+It watches `<project root>/config/commands/current.json`, applies that config when it changes, and exits if that control file is deleted. If you start the daemon directly, `config/commands/current.json` must already exist.
 
 Daemon-related shell helpers require:
 
@@ -73,6 +73,8 @@ geneassay/dynamic_update.sh [--line1=TEXT] [--line2=TEXT]
 - `--line2=TEXT` sets `party_state`
 - passing both updates both fields in one write
 - passing neither opens a `yad` form and applies whichever non-empty values you entered
+
+`dynamic_update.sh` expects `config/commands/current.json` to already exist, typically because you started the daemon with `./run-geneassay-daemon.sh` first.
 
 Daemon runtime artifacts live under `config/commands/`:
 
