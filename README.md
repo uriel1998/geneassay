@@ -39,7 +39,7 @@ The latest official release of Geneassay is available for both Linux and Windows
 9. Click `Update`
 10. Enjoy your new Discord Rich Presence!
 
-## How to build Geneassay from source
+## Run Geneassay from source
 
 Clone the repository and cd into it.
 
@@ -48,13 +48,37 @@ $ git clone git@github.com:dinogomez/geneassay.git
 $ cd geneassay
 ```
 
-Install the python requirements via pip
+Run the app directly with Python.
 
 ```bash
-pip install -r requirements.txt
+python3 geneassay/geneassay.py
 ```
 
-I advice building the application with `auto-py-to-exe` or `pyinstaller` to avoid any issues with missing dependencies.
+## Command line arguments
+
+Geneassay currently does not define or parse any application-specific command line arguments or flags.
+
+You can run it as:
+
+```bash
+python3 geneassay/geneassay.py
+```
+
+On first launch, the script will:
+
+1. Check whether it is already running inside a virtual environment.
+2. Create `.venv` if needed.
+3. Re-launch itself with the virtual environment's Python interpreter.
+4. Install everything from `requirements.txt`.
+5. Continue running with any command line arguments you originally passed in.
+
+At the moment, this argument preservation only means the bootstrap step will not discard extra arguments. The application itself does not currently consume them.
+
+Your system Python needs the standard `venv` module available for this to work.
+
+## Build Geneassay as an executable
+
+I advice building the application with `auto-py-to-exe` or `pyinstaller` if you want a standalone executable.
 
 With `auto-py-to-exe`.
 

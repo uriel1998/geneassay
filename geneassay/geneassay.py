@@ -1,18 +1,57 @@
+#!/usr/bin/env python3
 # @1.1.0
 # @name: Geneassay!
 # @author: Dino Paulo R. Gomez 2024
 
-from pypresence import Presence
-from PIL import ImageTk
-import customtkinter as ctk
-from datetime import datetime
-import time
-import sys
 import os
 import json
 import glob
+import subprocess
+import sys
+import time
+import venv
+from datetime import datetime
+from pathlib import Path
 
 from urllib.parse import urlparse
+
+
+def _in_virtualenv():
+    return (
+        sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+        or hasattr(sys, "real_prefix")
+        or os.environ.get("VIRTUAL_ENV") is not None
+    )
+
+
+def _venv_python_path(venv_dir):
+    if os.name == "nt":
+        return venv_dir / "Scripts" / "python.exe"
+    return venv_dir / "bin" / "python"
+
+
+def _ensure_runtime_environment():
+    project_root = Path(__file__).resolve().parent.parent
+    requirements_path = project_root / "requirements.txt"
+    venv_dir = project_root / ".venv"
+
+    if not _in_virtualenv():
+        if not venv_dir.exists():
+            venv.create(venv_dir, with_pip=True)
+        venv_python = _venv_python_path(venv_dir)
+        os.execv(str(venv_python), [str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]])
+
+    subprocess.check_call(
+        [sys.executable, "-m", "pip", "install", "-r", str(requirements_path)],
+        cwd=project_root,
+    )
+
+
+_ensure_runtime_environment()
+
+from pypresence import Presence
+from PIL import ImageTk
+import customtkinter as ctk
 
 # Dont really understand why, but it increases the render speed.
 # Caught ibus to be getting most of the cpu% so quick read
