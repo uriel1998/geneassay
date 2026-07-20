@@ -1,5 +1,5 @@
 # @1.1.0
-# @name: Genzai!
+# @name: Geneassay!
 # @author: Dino Paulo R. Gomez 2024
 
 from pypresence import Presence
@@ -26,7 +26,7 @@ os.environ['XMODIFIERS'] = "@im=none"
 CONFIG = {
     "VERSION": "1.0.0",
     "AUTHOR": "Dino Paulo R. Gomez",
-    "APP_TITLE": f"Genzai: Discord Rich Presence",
+    "APP_TITLE": f"Geneassay: Discord Rich Presence",
     "APP_ICON": "assets/icon.png",
     "APP_LOGO": "assets/logo.png",
     "APP_GEOMETRY": "520x480",
@@ -71,7 +71,7 @@ class DiscordRPC:
         try:
             self.RPC = Presence(app_id)
             self.RPC.connect()
-            self.RPC.update(state="Launching Genzai 🚀",
+            self.RPC.update(state="Launching Geneassay 🚀",
                             details="A user is preparing his presence.", start=int(time.time()))
             return True, None
         except Exception as e:
@@ -649,7 +649,7 @@ if __name__ == "__main__":
     app = App()
 
     # App Icon
-    iconpath = ImageTk.PhotoImage(file=resource_path("assets/genzai.png"))
+    iconpath = ImageTk.PhotoImage(file=resource_path("assets/geneassay.png"))
     app.wm_iconbitmap()
     app.iconphoto(False, iconpath)
 

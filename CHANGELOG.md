@@ -4,7 +4,7 @@
 
 ### Added
 
-- Initial release of Genzai 🎉, a lightweight Discord custom Rich Presence manager.
+- Initial release of Geneassay 🎉, a lightweight Discord custom Rich Presence manager.
 
 - Core functionalities:
   - Connect to Discord RPC using a client ID.
