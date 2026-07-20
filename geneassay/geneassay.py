@@ -7,6 +7,7 @@ import os
 import json
 import subprocess
 import sys
+import threading
 import time
 import venv
 from datetime import datetime
@@ -136,13 +137,20 @@ class DiscordRPC:
             return False
 
     def update_presence(self, **kwargs):
-        if self.RPC:
-            presence = {}
-            for key, value in kwargs.items():
-                if value:
-                    presence[key] = value
+        if not self.RPC:
+            return False, "Discord RPC is not connected."
+
+        presence = {}
+        for key, value in kwargs.items():
+            if value:
+                presence[key] = value
+
+        try:
             print("Args", presence)
             self.RPC.update(**presence)
+            return True, None
+        except Exception as e:
+            return False, e
 
 
 class App(ctk.CTk):
@@ -377,6 +385,7 @@ class App(ctk.CTk):
 
         # Vars
         self.isConnected = False
+        self.isUpdatingPresence = False
         self.config_init()
 
     def combobox_config_callback(self, choice):
@@ -579,10 +588,47 @@ class App(ctk.CTk):
             if self.selected_timestamp:
                 update_kwargs["start"] = self.selected_timestamp
             if update_kwargs:
-                # Call the update on the discord RPC
-                self.discord_rpc.update_presence(**update_kwargs)
-                self.update_timestamp = datetime.now().timestamp()
-                self.set_app_label("Presence Updated", "white")
+                if self.isUpdatingPresence:
+                    self.set_app_label("Presence update already in progress.")
+                    return
+
+                self.isUpdatingPresence = True
+                self.button_update.configure(
+                    state="disabled", fg_color=STYLE["DISABLED"])
+                threading.Thread(
+                    target=self._update_presence_async,
+                    args=(update_kwargs,),
+                    daemon=True,
+                ).start()
+
+    def _update_presence_async(self, update_kwargs):
+        success, error = self.discord_rpc.update_presence(**update_kwargs)
+        self.after(0, self._finish_presence_update, success, error)
+
+    def _finish_presence_update(self, success, error):
+        self.isUpdatingPresence = False
+
+        if self.isConnected:
+            self.button_update.configure(
+                state="normal", fg_color=STYLE["NORMAL"])
+
+        if success:
+            self.update_timestamp = datetime.now().timestamp()
+            self.set_app_label("Presence Updated", "white")
+            return
+
+        self.set_app_label(
+            f"Presence update failed. {self.format_error(error)}")
+
+    def format_error(self, error):
+        if error is None:
+            return "Unknown error."
+
+        message = getattr(error, "message", None)
+        if message:
+            return message
+
+        return str(error)
 
     def connect(self):
         # Retrieve the Application ID entered by the user
@@ -610,7 +656,8 @@ class App(ctk.CTk):
             return True
         else:
             # If connection fails, display the error message
-            self.set_app_label(f"Connection Failed. {res.message}")
+            self.set_app_label(
+                f"Connection Failed. {self.format_error(res)}")
 
     def disconnect(self):
         # Check if already disconnected
