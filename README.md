@@ -1,19 +1,25 @@
 
 # <img src=https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png style="height:1em;"/> Geneassay : Discord Rich Presence
 
----
-
-### ⭐ [NEW] Added option to load and save your settings to the `config/` directory at the project root.
-
 A lightweight Discord custom Rich Presence manager that runs on Linux.  Has both a GUI built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) and [pypresence](https://github.com/qwertyquerty/pypresence), heavily inspired by [maximax42](https://github.com/maximmax42)'s amazing [Discord-CustomRP](https://github.com/maximmax42/Discord-CustomRP).
 Also has a daemon mode that allows for dynamic and scripted updating.
 
 This project is a fork of [dinogomez/genzai](https://github.com/dinogomez/genzai).
 
+Geneassay can load and save settings in the `config/` directory at the project root.
+
+## Table Of Contents
+
+- [Run Geneassay From Source As A GUI](#run-geneassay-from-source-as-a-gui)
+- [Config File Reference](#config-file-reference)
+- [Run Geneassay As A Daemon](#run-geneassay-as-a-daemon)
+- [GUI Command Line Arguments](#gui-command-line-arguments)
+- [License](#license)
+
 <p align="left"><img src="https://raw.githubusercontent.com/uriel1998/geneassay/master/panic.png"></p>
 
  
-# Run Geneassay from source
+## Run Geneassay From Source As A GUI
 
 Clone the repository and cd into it.
 
@@ -22,15 +28,71 @@ $ git clone git@github.com:uriel1998/geneassay.git
 $ cd geneassay
 ```
 
+Make a new Discord application, here in the [Discord Developer Portal](https://discord.com/developers/applications).
+
+Click New Application on the top right.
+
+Create your application name, this will be your title in your Discord Presence.
+
 Run the app directly with Python.  It will create a venv and download needed requirements automatically.
 
 ```bash
 python3 geneassay/geneassay.py
 ```
 
+Copy the Application ID and paste it in the App ID field in Genzai.
+
+Click Connect
+
+Fill out the fields you want.
+
+Click Update
+
+Enjoy your new Discord Rich Presence!
+
 Geneassay reads saved configurations from `<project root>/config` and saves new configuration JSON files there.
 
-## Run Geneassay as a daemon
+## Config File Reference
+
+Saved configs and daemon control files are JSON objects. The example file is:
+
+```text
+config/config.json.example
+```
+
+Common keys:
+
+- `app_id`: Discord application ID. Required for both the GUI and daemon.
+- `details`: Main Rich Presence text line.
+- `party_state`: Secondary Rich Presence text line.
+- `party_min`: Current party size. Must be used together with `party_max` and `party_state`.
+- `party_max`: Maximum party size. Must be used together with `party_min` and `party_state`.
+- `large_image_url`: URL for the large image asset.
+- `large_image_text`: Hover text for the large image. Required if `large_image_url` is set.
+- `small_image_url`: URL for the small image asset.
+- `small_image_text`: Hover text for the small image. Required if `small_image_url` is set.
+- `button_one_url`: URL for the first button.
+- `button_one_text`: Label for the first button. Required if `button_one_url` is set.
+- `button_two_url`: URL for the second button.
+- `button_two_text`: Label for the second button. Required if `button_two_url` is set.
+
+Daemon-supported timestamp keys:
+
+- `timestamp_mode`: One of `start time`, `none`, `local time`, or `custom timestamp`.
+- `custom_timestamp`: Required when `timestamp_mode` is `custom timestamp`. Format: `Month DD, YYYY HH:MM:SS AM/PM`.
+
+Notes:
+
+- The GUI currently saves the common keys above. It does not currently write `timestamp_mode` or `custom_timestamp` into saved JSON.
+- The daemon can consume both the common keys and the timestamp keys.
+- Image and button URLs must be valid URLs.
+- If a remote image update fails, the daemon retries once with the default panic image fallback.
+
+
+## Run Geneassay As A Daemon
+
+**NOTE: You will need to have pre-configured configurations for this to work. Save them with the GUI or edit them by hand.**
+
 
 The daemon entrypoint is:
 
@@ -38,7 +100,7 @@ The daemon entrypoint is:
 python3 geneassay/geneassay-daemon.py
 ```
 
-It watches `<project root>/config/commands/current.json`, applies that config when it changes, and exits if that control file is deleted. If you start the daemon directly, `config/commands/current.json` must already exist.
+It watches `<project root>/config/commands/current.json`, applies that config when it changes, and exits if that control file is deleted. If you start the daemon directly, `config/commands/current.json` must already exist.  
 
 Daemon-related shell helpers require:
 
@@ -84,7 +146,7 @@ Daemon runtime artifacts live under `config/commands/`:
 
 Delete `config/commands/current.json` to make the daemon exit.
 
-## GUI command line arguments
+## GUI Command Line Arguments
 
 `geneassay.py` currently does not define or parse any application-specific command line arguments or flags.
 
