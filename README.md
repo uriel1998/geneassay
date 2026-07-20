@@ -4,7 +4,7 @@
 A lightweight Discord custom Rich Presence manager that runs on Linux.  Has both a GUI built with [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter) and [pypresence](https://github.com/qwertyquerty/pypresence), heavily inspired by [maximax42](https://github.com/maximmax42)'s amazing [Discord-CustomRP](https://github.com/maximmax42/Discord-CustomRP).
 Also has a daemon mode that allows for dynamic and scripted updating.
 
-This project is a fork of [dinogomez/genzai](https://github.com/dinogomez/genzai).
+This project is a fork of the original upstream repository at [github.com/dinogomez/genzai](https://github.com/dinogomez/genzai).
 
 Geneassay can load and save settings in the `config/` directory at the project root.
 
@@ -34,13 +34,18 @@ Click New Application on the top right.
 
 Create your application name, this will be your title in your Discord Presence.
 
-Run the app directly with Python.  It will create a venv and download needed requirements automatically.
+Run the app directly with Python.  On first launch, the script will:
+
+1. Check whether it is already running inside a virtual environment.
+2. Create `.venv` if needed.
+3. Re-launch itself with the virtual environment's Python interpreter.
+4. Install everything from `requirements.txt`.
 
 ```bash
 python3 geneassay/geneassay.py
 ```
 
-Copy the Application ID and paste it in the App ID field in Genzai.
+Copy the Application ID from Discord and paste it in the App ID field in Geneassay.
 
 Click Connect
 
@@ -156,12 +161,7 @@ You can run it as:
 python3 geneassay/geneassay.py
 ```
 
-On first launch, the script will:
 
-1. Check whether it is already running inside a virtual environment.
-2. Create `.venv` if needed.
-3. Re-launch itself with the virtual environment's Python interpreter.
-4. Install everything from `requirements.txt`.
 5. Continue running with any command line arguments you originally passed in.
 
 At the moment, this argument preservation only means the bootstrap step will not discard extra arguments. The application itself does not currently consume them.
