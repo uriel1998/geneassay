@@ -31,14 +31,14 @@ PressureLevel=$(awk -v score="$PressureScore" 'BEGIN {
 )
 
 case "$PressureLevel" in 
-	1) icon="🟪";;
-	2) icon="🟦";;
-	3) icon="🟩";;
-	4) icon="🟨";;
-	5) icon="🟧";;
-	6) icon="🟥";;
-	7) icon="◻️";;
-	*) icon="🟫";;
+	1) icon="🟫";;
+	2) icon="🟪";;
+	3) icon="🟦";;
+	4) icon="🟩";;
+	5) icon="🟨";;
+	6) icon="🟧";;
+	7) icon="🟥";;
+	*) icon="◻️";;
 esac
 
 out_text=$(printf "pressure: %s %s" "$icon" "$PressureScore")
