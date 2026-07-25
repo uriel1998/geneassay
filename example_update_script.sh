@@ -8,10 +8,10 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 project_root="$(cd "${script_dir}" && pwd)"
-dynamic_update_script="${project_root}/geneassay/dynamic_update.sh"
+dynamic_update_script="${project_root}/dynamic_update.sh"
 
 if [ ! -f "${project_root}/config/commands/geneassay-daemon.pid" ];then
-	printf 'This requires the daemon to be running first, sorry.' >&2
+	printf 'This requires the daemon to be running first, sorry.'
 	exit 1
 fi
 

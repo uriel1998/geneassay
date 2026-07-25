@@ -111,8 +111,8 @@ It watches `<project root>/config/commands/current.json`, applies that config wh
 Daemon-related shell helpers require:
 
 - `fzf` for `run-geneassay-daemon.sh`
-- `jq` for `geneassay/dynamic_update.sh`
-- `yad` for `geneassay/dynamic_update.sh` when you omit both `--line1` and `--line2`
+- `jq` for `dynamic_update.sh`
+- `yad` for `dynamic_update.sh` when you omit both `--line1` and `--line2`
 
 The included helper script lets you choose a saved config with `fzf`, stage it into the control path, and start the daemon if it is not already running:
 
@@ -132,14 +132,23 @@ Choosing `exit` deletes `config/commands/current.json`, which makes the daemon s
 To update the active daemon control file in place without switching configs, use:
 
 ```bash
-geneassay/dynamic_update.sh [--line1=TEXT] [--line2=TEXT]
+./dynamic_update.sh [--line1=TEXT] [--line2=TEXT]
 ```
 
 `dynamic_update.sh` updates `config/commands/current.json` with `jq`:
 
 - `--line1=TEXT` sets `details`
 - `--line2=TEXT` sets `party_state`
-- passing both updates both fields in one write
+- `--details=TEXT` is the same as `--line1=TEXT`
+- `--party-state=TEXT` is the same as `--line2=TEXT`
+- `--app-id=ID` updates the Discord application ID
+- `--party-min=NUMBER` and `--party-max=NUMBER` update party size fields
+- `--large-image-url=URL` and `--large-image-text=TEXT` update the large image fields
+- `--small-image-url=URL` and `--small-image-text=TEXT` update the small image fields
+- `--button-one-url=URL` and `--button-one-text=TEXT` update the first button
+- `--button-two-url=URL` and `--button-two-text=TEXT` update the second button
+- `--timestamp-mode=MODE` and `--custom-timestamp=TEXT` update daemon timestamp behavior
+- passing any combination of these updates all supplied fields in one write
 - passing neither opens a `yad` form and applies whichever non-empty values you entered
 
 `dynamic_update.sh` expects `config/commands/current.json` to already exist, typically because you started the daemon with `./run-geneassay-daemon.sh` first.
