@@ -12,11 +12,24 @@ dynamic_update_script="${project_root}/dynamic_update.sh"
 
 if [ ! -f "${project_root}/config/commands/geneassay-daemon.pid" ];then
 	printf 'This requires the daemon to be running first, sorry.'
-	exit 1
+	exit
 fi
 
+score_file="/home/steven/.cache/tanuki_weather/weather_cache/Phonepressure_pressure_score.txt"
 
-PressureScore=$(head -n 1 /home/steven/.cache/tanuki_weather/weather_cache/Phonepressure_pressure_score.txt)
+if [[ ! -f "${score_file}" ]]; then
+    printf 'Score file not found: %s\n' "${score_file}" >&2
+    exit 1
+fi
+
+IFS= read -r PressureScore < "${score_file}"
+PressureScore="${PressureScore%$'\r'}"
+
+if [[ ! "${PressureScore}" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    printf 'Unexpected score format: <%s>\n' "${PressureScore}" >&2
+    exit 1
+fi
+
 PressureLevel=$(awk -v score="$PressureScore" 'BEGIN {
         if      (score < 0.50) level = 1
         else if (score < 1.00) level = 2
@@ -42,7 +55,6 @@ case "$PressureLevel" in
 esac
 
 out_text=$(printf "pressure: %s %s" "$icon" "$PressureScore")
-
-
+ 
 
 "${dynamic_update_script}" --line2="${out_text}"

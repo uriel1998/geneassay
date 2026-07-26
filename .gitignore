@@ -1,6 +1,7 @@
 # Local project artifacts
 /1_reference/
 /config/*.json
+update_script_2.sh
 !/config/config.json.example
 /config/commands/*.json
 /config/commands/*.pid
