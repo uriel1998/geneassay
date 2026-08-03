@@ -9,6 +9,7 @@ pid_file="${project_root}/config/commands/geneassay-daemon.pid"
 declare -a jq_args=()
 declare -a jq_filters=()
 update_count=0
+prompt_mode="tui"
 
 add_update() {
     local jq_var="$1"
@@ -44,12 +45,16 @@ Options:
   --button-two-text=TEXT
   --timestamp-mode=MODE
   --custom-timestamp=TEXT
+  --gui
+  --tui
   --help
 
 Notes:
   --line1 is an alias for --details.
   --line2 is an alias for --party-state.
-  If no options are supplied, yad is used to prompt for line1 and line2.
+  --gui forces a yad prompt when interactive input is needed.
+  --tui forces a dialog form prompt when interactive input is needed.
+  If no update fields are supplied, the default interactive mode is --tui.
 EOF
 }
 
@@ -63,6 +68,12 @@ for arg in "$@"; do
         --help)
             show_usage
             exit 0
+            ;;
+        --gui)
+            prompt_mode="gui"
+            ;;
+        --tui)
+            prompt_mode="tui"
             ;;
         --app-id=*)
             add_update "app_id" "app_id" "${arg#--app-id=}"
@@ -128,29 +139,59 @@ if [[ ! -f "${control_file}" ]]; then
 fi
 
 if (( update_count == 0 )); then
-    if ! command -v yad >/dev/null 2>&1; then
-        printf 'yad is required when no command line options are supplied.\n' >&2
-        exit 1
+    case "${prompt_mode}" in
+        gui)
+            if ! command -v yad >/dev/null 2>&1; then
+                printf 'yad is required for --gui.\n' >&2
+                exit 1
+            fi
+
+            prompt_output="$(
+                yad \
+                    --title="Geneassay Dynamic Update" \
+                    --form \
+                    --field="Line 1" \
+                    --field="Line 2" \
+                    --separator='|' \
+                    --button="OK":0 \
+                    --button="Cancel":1
+            )" || exit 1
+            ;;
+        tui)
+            if ! command -v dialog >/dev/null 2>&1; then
+                printf 'dialog is required for --tui.\n' >&2
+                exit 1
+            fi
+
+            prompt_output="$(
+                dialog \
+                    --stdout \
+                    --title "Geneassay Dynamic Update" \
+                    --ok-label "OK" \
+                    --cancel-label "Cancel" \
+                    --form "Enter values" 14 80 2 \
+                    "Line 1:" 1 1 "" 1 12 50 0 \
+                    "Line 2:" 2 1 "" 2 12 50 0
+            )" || exit 1
+            mapfile -t prompt_lines <<< "${prompt_output}"
+            prompt_line1="${prompt_lines[0]:-}"
+            prompt_line2="${prompt_lines[1]:-}"
+            ;;
+        *)
+            printf 'Unknown prompt mode: %s\n' "${prompt_mode}" >&2
+            exit 1
+            ;;
+    esac
+
+    if [[ "${prompt_mode}" == "gui" ]]; then
+        IFS='|' read -r prompt_line1 prompt_line2 <<< "${prompt_output}"
     fi
 
-    yad_output="$(
-        yad \
-            --title="Geneassay Dynamic Update" \
-            --form \
-            --field="Line 1" \
-            --field="Line 2" \
-            --separator='|' \
-            --button="OK":0 \
-            --button="Cancel":1
-    )" || exit 1
-
-    IFS='|' read -r yad_line1 yad_line2 <<< "${yad_output}"
-
-    if [[ -n "${yad_line1}" ]]; then
-        add_update "details" "details" "${yad_line1}"
+    if [[ -n "${prompt_line1:-}" ]]; then
+        add_update "details" "details" "${prompt_line1}"
     fi
-    if [[ -n "${yad_line2}" ]]; then
-        add_update "party_state" "party_state" "${yad_line2}"
+    if [[ -n "${prompt_line2:-}" ]]; then
+        add_update "party_state" "party_state" "${prompt_line2}"
     fi
 fi
 

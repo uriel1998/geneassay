@@ -112,7 +112,8 @@ Daemon-related shell helpers require:
 
 - `fzf` for `run-geneassay-daemon.sh`
 - `jq` for `dynamic_update.sh`
-- `yad` for `dynamic_update.sh` when you omit both `--line1` and `--line2`
+- `yad` for `dynamic_update.sh --gui`
+- `dialog` for `dynamic_update.sh --tui` and the default interactive prompt mode
 
 The included helper script lets you choose a saved config with `fzf`, stage it into the control path, and start the daemon if it is not already running:
 
@@ -150,8 +151,10 @@ To update the active daemon control file in place without switching configs, use
 - `--button-one-url=URL` and `--button-one-text=TEXT` update the first button
 - `--button-two-url=URL` and `--button-two-text=TEXT` update the second button
 - `--timestamp-mode=MODE` and `--custom-timestamp=TEXT` update daemon timestamp behavior
+- `--gui` forces interactive input through `yad` when no update fields are passed
+- `--tui` forces interactive input through a two-field `dialog --form` prompt
 - passing any combination of these updates all supplied fields in one write
-- passing neither opens a `yad` form and applies whichever non-empty values you entered
+- passing neither uses the default TUI prompt mode and applies whichever non-empty values you entered
 
 `dynamic_update.sh` expects `config/commands/current.json` to already exist, typically because you started the daemon with `./run-geneassay-daemon.sh` first.
 
