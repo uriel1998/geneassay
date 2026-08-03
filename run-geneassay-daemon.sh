@@ -8,6 +8,7 @@ control_file="${commands_dir}/current.json"
 pid_file="${commands_dir}/geneassay-daemon.pid"
 log_file="${commands_dir}/geneassay-daemon.log"
 daemon_script="${project_root}/geneassay/geneassay-daemon.py"
+dynamic_update_script="${project_root}/dynamic_update.sh"
 startup_timeout_seconds=30
 
 if ! command -v fzf >/dev/null 2>&1; then
@@ -20,6 +21,7 @@ mkdir -p "${commands_dir}"
 selected_config="$(
     {
         printf 'exit\n'
+        printf 'dynamic update\n'
         find "${config_dir}" -maxdepth 1 -type f -name 'config_*.json' ! -name 'config.json.example' | sort
     } | fzf --prompt='Geneassay config> '
 )"
@@ -33,6 +35,23 @@ if [[ "${selected_config}" == "exit" ]]; then
     rm -f "${control_file}"
     printf 'Deleted control file and requested daemon exit.\n'
     exit 0
+fi
+
+if [[ "${selected_config}" == "dynamic update" ]]; then
+    if [[ ! -x "${dynamic_update_script}" ]]; then
+        printf 'dynamic_update.sh not found or not executable: %s\n' "${dynamic_update_script}" >&2
+        exit 1
+    fi
+
+    if [[ -f "${pid_file}" ]]; then
+        existing_pid="$(<"${pid_file}")"
+        if [[ -n "${existing_pid}" ]] && kill -0 "${existing_pid}" 2>/dev/null; then
+            exec "${dynamic_update_script}" "$@"
+        fi
+    fi
+
+    printf 'Geneassay daemon is not running, so dynamic update is unavailable.\n' >&2
+    exit 1
 fi
 
 tmp_file="$(mktemp "${commands_dir}/current.json.XXXXXX")"

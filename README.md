@@ -122,12 +122,14 @@ The included helper script lets you choose a saved config with `fzf`, stage it i
 
 The helper script:
 
-1. Lets you pick one of the `config/config_*.json` files with `fzf`, or choose `exit`.
+1. Lets you pick one of the `config/config_*.json` files with `fzf`, or choose `dynamic update` or `exit`.
 2. Copies the selected config into `config/commands/current.json`.
 3. Starts `geneassay-daemon.py` only if it is not already running.
 4. Leaves an already-running daemon alone, so it can notice the updated control file on its own.
 
 Choosing `exit` deletes `config/commands/current.json`, which makes the daemon stop itself.
+
+Choosing `dynamic update` runs `./dynamic_update.sh`, but only if the daemon is already running. Any command line arguments you passed to `./run-geneassay-daemon.sh` are forwarded to `./dynamic_update.sh`.
 
 To update the active daemon control file in place without switching configs, use:
 
