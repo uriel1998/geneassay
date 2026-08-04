@@ -52,6 +52,7 @@ def _ensure_runtime_environment():
 _ensure_runtime_environment()
 
 from pypresence import Presence
+from pypresence.utils import get_ipc_path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -130,6 +131,7 @@ class GeneassayDaemon:
         self.connected_app_id = None
         self.start_time = int(time.time())
         self.last_applied_signature = None
+        self.last_full_reload_token = None
 
     def run(self):
         COMMANDS_DIR.mkdir(parents=True, exist_ok=True)
@@ -142,17 +144,26 @@ class GeneassayDaemon:
 
         print(f"Watching control file: {CONTROL_FILE}", flush=True)
 
+        try:
+            self._apply_current_control_file()
+            print("Control file applied successfully.", flush=True)
+        except Exception as error:
+            print(f"Failed to apply control file at startup: {format_error(error)}", flush=True)
+            return 1
+
         while self.running:
             if not CONTROL_FILE.exists():
                 print("Control file deleted. Exiting daemon.", flush=True)
                 return 0
 
+            if self.connected_app_id and not self._ipc_available():
+                print("Discord-compatible IPC disappeared. Exiting daemon.", flush=True)
+                return 0
+
             signature = self._control_file_signature()
             if signature != self.last_applied_signature:
-                self.last_applied_signature = signature
                 try:
-                    config = self._load_control_config()
-                    self._apply_config(config)
+                    self._apply_current_control_file()
                     print("Control file applied successfully.", flush=True)
                 except Exception as error:
                     print(f"Failed to apply control file: {format_error(error)}", flush=True)
@@ -203,17 +214,28 @@ class GeneassayDaemon:
         with CONTROL_FILE.open("r") as handle:
             return json.load(handle)
 
+    def _apply_current_control_file(self):
+        self.last_applied_signature = self._control_file_signature()
+        config = self._load_control_config()
+        self._apply_config(config)
+
     def _apply_config(self, config):
         app_id = str(config.get("app_id", "")).strip()
         if not app_id:
             raise ValueError("Control config must include a non-empty app_id.")
 
-        if self.connected_app_id != app_id:
-            self.rpc.disconnect()
-            success, error = self.rpc.connect(app_id)
-            if not success:
-                raise RuntimeError(f"Connection failed. {format_error(error)}")
-            self.connected_app_id = app_id
+        full_reload_token = str(config.get("_geneassay_full_reload_token", "")).strip()
+        should_reconnect = (
+            self.connected_app_id != app_id
+            or (
+                full_reload_token
+                and full_reload_token != self.last_full_reload_token
+            )
+        )
+
+        if should_reconnect:
+            self._reconnect(app_id)
+            self.last_full_reload_token = full_reload_token or None
 
         update_kwargs = self._build_update_kwargs(config)
         if not update_kwargs:
@@ -229,6 +251,16 @@ class GeneassayDaemon:
 
         if not success:
             raise RuntimeError(f"Presence update failed. {format_error(error)}")
+
+    def _reconnect(self, app_id):
+        self.rpc.disconnect()
+        success, error = self.rpc.connect(app_id)
+        if not success:
+            raise RuntimeError(f"Connection failed. {format_error(error)}")
+
+        self.connected_app_id = app_id
+        # Reset the daemon's default timer origin on every applied config change.
+        self.start_time = int(time.time())
 
     def _build_update_kwargs(self, config):
         details = str(config.get("details", "")).strip()
@@ -341,6 +373,12 @@ class GeneassayDaemon:
         except OSError:
             return False
         return True
+
+    def _ipc_available(self):
+        try:
+            return bool(get_ipc_path())
+        except Exception:
+            return False
 
 
 def main():

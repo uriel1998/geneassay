@@ -16,6 +16,11 @@ if ! command -v fzf >/dev/null 2>&1; then
     exit 1
 fi
 
+if ! command -v jq >/dev/null 2>&1; then
+    printf 'jq is required but was not found in PATH.\n' >&2
+    exit 1
+fi
+
 mkdir -p "${commands_dir}"
 
 selected_config="$(
@@ -55,7 +60,10 @@ if [[ "${selected_config}" == "dynamic update" ]]; then
 fi
 
 tmp_file="$(mktemp "${commands_dir}/current.json.XXXXXX")"
-cp "${selected_config}" "${tmp_file}"
+jq \
+    --arg reload_token "$(date +%s%N)" \
+    '._geneassay_full_reload_token = $reload_token' \
+    "${selected_config}" > "${tmp_file}"
 mv "${tmp_file}" "${control_file}"
 printf 'Updated control file from %s\n' "$(basename "${selected_config}")"
 

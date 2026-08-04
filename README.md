@@ -106,11 +106,12 @@ The daemon entrypoint is:
 python3 geneassay/geneassay-daemon.py
 ```
 
-It watches `<project root>/config/commands/current.json`, applies that config when it changes, and exits if that control file is deleted. If you start the daemon directly, `config/commands/current.json` must already exist.  
+It watches `<project root>/config/commands/current.json`, applies that config when it changes, exits if that control file is deleted, and also exits if the Discord-compatible IPC socket disappears. If you start the daemon directly, `config/commands/current.json` must already exist.  
 
 Daemon-related shell helpers require:
 
 - `fzf` for `run-geneassay-daemon.sh`
+- `jq` for `run-geneassay-daemon.sh`
 - `jq` for `dynamic_update.sh`
 - `yad` for `dynamic_update.sh --gui`
 - `dialog` for `dynamic_update.sh --tui` and the default interactive prompt mode
@@ -124,7 +125,7 @@ The included helper script lets you choose a saved config with `fzf`, stage it i
 The helper script:
 
 1. Lets you pick one of the `config/config_*.json` files with `fzf`, or choose `dynamic update` or `exit`.
-2. Copies the selected config into `config/commands/current.json`.
+2. Copies the selected config into `config/commands/current.json` and stamps it as a full config reload.
 3. Starts `geneassay-daemon.py` only if it is not already running.
 4. Leaves an already-running daemon alone, so it can notice the updated control file on its own.
 
@@ -157,6 +158,8 @@ To update the active daemon control file in place without switching configs, use
 - passing neither uses the default TUI prompt mode and applies whichever non-empty values you entered
 
 `dynamic_update.sh` expects `config/commands/current.json` to already exist, typically because you started the daemon with `./run-geneassay-daemon.sh` first.
+
+Full config swaps through `./run-geneassay-daemon.sh` trigger a daemon reconnect, which resets the default timer origin. Ordinary `./dynamic_update.sh` edits do not trigger that reconnect.
 
 Daemon runtime artifacts live under `config/commands/`:
 

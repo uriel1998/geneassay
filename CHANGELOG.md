@@ -14,6 +14,8 @@
 - Discord presence updates, connection attempts, and config-save validation were moved off the GUI thread to avoid apparent hangs during RPC or remote asset failures.
 - Presence updates now retry image failures once with the default panic image fallback.
 - `dynamic_update.sh` now accepts a broader set of control-file switches, including app ID, party size, image fields, button fields, and daemon timestamp fields.
+- Full config swaps through `run-geneassay-daemon.sh` now trigger daemon reconnects, while ordinary `dynamic_update.sh` edits do not.
+- The daemon now exits automatically if the Discord-compatible IPC socket disappears after it has connected.
 
 ## [1.0.0] - 2024-06-08
 
